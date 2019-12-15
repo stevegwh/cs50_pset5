@@ -1,67 +1,89 @@
 // Implements a dictionary's functionality
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
 
 #include "dictionary.h"
 
-typedef struct _node {
-	char word[LENGTH];
-	struct _node *next;
+int dictSize = 0;
+
+typedef struct node {
+	char word[LENGTH + 1];
+	struct node *next;
 	
-} dictionary_node;
+} node;
+node * hash_table[HASH_TABLE_LENGTH] = {0};
 
-
-dictionary_node * hash_table[HASH_TABLE_LENGTH] = {0};
+/**
+ * Hash function via reddit user delipity:
+ * https://www.reddit.com/r/cs50/comments/1x6vc8/pset6_trie_vs_hashtable/cf9nlkn
+ */
+int hash_it(char* needs_hashing)
+{
+    unsigned int hash = 0;
+    for (int i=0, n=strlen(needs_hashing); i<n; i++)
+        hash = (hash << 2) ^ needs_hashing[i];
+    return hash % HASH_TABLE_LENGTH;
+}
 
 // Returns true if word is in dictionary else false
-bool check(__attribute__((unused)) const char *word)
+bool check(const char *word)
 {
-  /* for (int i = 0; i <= dictSize; i++) { */
-  /*   printf(" %s ", dictPtr[i]); */
-  /* } */
+  int len = strlen(word);
+  char copy[len + 1];
+
+  for (int i = 0; i < len; i++) {
+     copy[i] = tolower(word[i]);
+  }
+
+  copy[len] = '\0';
+
+  node * current = hash_table[hash_it(copy)];
+  while (current != NULL) {
+    if (strcmp(current->word, copy) == 0) {
+      return true;
+    } else {
+      current = current->next;
+    }
+  }
   return false;
 }
 
-// Loads dictionary into memory, returning true if successful else false
+/* // Loads dictionary into memory, returning true if successful else false */
 bool load(const char *dictionary)
 {
-    char line[LENGTH];
-	int i = 0;
     FILE *file = fopen (dictionary, "r");
     if (file != NULL) {
-        while (fgets (line, sizeof line, file) != NULL) {
-			i = i % HASH_TABLE_LENGTH;
-			dictionary_node *node = malloc(sizeof(dictionary_node));
-			strcpy(node->word, line);
-			// Check if linked list initialized. If so, make new element the new head
-			if (hash_table[i] == 0) {
-				node->next = NULL;
-				printf("Linked list doesn't exist. \n");
-			} else {
-				printf("Exists, changing head. \n");
-				// Point to the head of the table
-				node->next = hash_table[i];
-			}
-			// Change end of linked list to the new element
-			hash_table[i] = node;
-			i++;
+      while(!feof(file)) {
+          node *node1 = malloc(sizeof(node));
+
+          if (node1 == NULL) {
+            printf("Could not malloc a new node.\n");
+            return false;
+          }
+
+          fscanf(file, "%s", node1->word);
+          int h = hash_it(node1->word);
+  //      If list isn't initialized then start the list.
+          if (hash_table[h] == 0) {
+            node1->next = NULL;
+          } else {
+  // 				Point the new node to the old head of the list
+            node1->next = hash_table[h];
+          }
+  // 			Change head of linked list to the new node
+          hash_table[h] = node1;
+          dictSize++;
         }
-		printf("%s", hash_table[0]->next->next->next->word);
         fclose (file);
         return true;
     } else {
-		return false;
+      return false;
     }
 }
 
 // Returns number of words in dictionary if loaded else 0 if not yet loaded
 unsigned int size(void)
 {
-  return 0;
+  return dictSize;
 }
 
 // Unloads dictionary from memory, returning true if successful else false
@@ -70,3 +92,4 @@ bool unload(void)
     /* dictPtr = 0; */
     return true;
 }
+
