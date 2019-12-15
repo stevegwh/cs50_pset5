@@ -20,7 +20,7 @@ unsigned long hash(char *str)
 }
 
 typedef struct _node {
-	char *word;
+	char word[LENGTH];
 	struct _node *next;
 	
 } dictionary_node;
@@ -66,14 +66,13 @@ bool load(const char *dictionary)
 				break;
 			}
 			dictionary_node *node = malloc(sizeof(dictionary_node));
-			char s[LENGTH];
-			strcpy(s, line);
+			strcpy(node->word, line);
 			hash_table[i] = node;
-			hash_table[i]->word = s;
 // 			printf("%lu ", hash(line) % 500);
-			printf("%s", hash_table[i]->word);
+// 			printf("%s", hash_table[i]->word);
 			i++;
         }
+		printf("%s", hash_table[2]->word);
         fclose (file);
         return true;
     } else {
