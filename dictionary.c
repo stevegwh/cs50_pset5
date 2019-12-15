@@ -4,53 +4,87 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "dictionary.h"
 
-char * dict[10];
-char ** dictPtr = dict;
+unsigned long hash(char *str)
+{
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+    return hash;
+}
+
+typedef struct _node {
+	char *word;
+	struct _node *next;
+	
+} dictionary_node;
+
+dictionary_node * hash_table[500] = {0};
 
 // Returns true if word is in dictionary else false
 bool check(__attribute__((unused)) const char *word)
 {
+  /* for (int i = 0; i <= dictSize; i++) { */
+  /*   printf(" %s ", dictPtr[i]); */
+  /* } */
   return false;
 }
 
 // Loads dictionary into memory, returning true if successful else false
 bool load(const char *dictionary)
 {
-    int len = sizeof(dict)/sizeof(char *);
+// 	dictionary_node HEAD;
+// 	HEAD.next = NULL;
+// 	HEAD.word = NULL;
     char line[LENGTH];
+	int i = 0;
     FILE *file = fopen (dictionary, "r");
     if (file != NULL) {
-        int i = 0;
         while (fgets (line, sizeof line, file) != NULL) {
-            if ( i == len  - 1) {
-              int origlen = len;
-              len *= 2;
-              char * tmp[len];
-              for (int x = 0; x < origlen; x++) {
-                tmp[x] = dictPtr[x];
-              }
-              dictPtr = tmp;
-            }
-            dictPtr[i] = line;
-            printf("%s", dictPtr[i]);
-            i++;
+// 			if (i == 0) {
+// 				char s[LENGTH];
+// 				strcpy(s, line);
+// 				HEAD.word = s;
+// 				i++;
+// 				continue;
+// 			}
+// 			dictionary_node node;
+// 			char s[LENGTH];
+// 			strcpy(s, line);
+// 			node.word = s;
+// 			node.next = &HEAD;
+// 			HEAD = node;
+// 			printf("%s", HEAD.word);
+// 			dictionary_node node;
+			if (i == 500) {
+				break;
+			}
+			dictionary_node *node = malloc(sizeof(dictionary_node));
+			char s[LENGTH];
+			strcpy(s, line);
+			hash_table[i] = node;
+			hash_table[i]->word = s;
+// 			printf("%lu ", hash(line) % 500);
+			printf("%s", hash_table[i]->word);
+			i++;
         }
-        /* fprintf(stdout, "%d", len); */
         fclose (file);
-        // Stash array size at start of array 
         return true;
     } else {
-        return false;
+		return false;
     }
 }
 
 // Returns number of words in dictionary if loaded else 0 if not yet loaded
 unsigned int size(void)
 {
-    return 0;
+  return 0;
 }
 
 // Unloads dictionary from memory, returning true if successful else false
