@@ -8,24 +8,14 @@
 
 #include "dictionary.h"
 
-unsigned long hash(char *str)
-{
-    unsigned long hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-
-    return hash;
-}
-
 typedef struct _node {
 	char word[LENGTH];
 	struct _node *next;
 	
 } dictionary_node;
 
-dictionary_node * hash_table[500] = {0};
+
+dictionary_node * hash_table[HASH_TABLE_LENGTH] = {0};
 
 // Returns true if word is in dictionary else false
 bool check(__attribute__((unused)) const char *word)
@@ -39,40 +29,28 @@ bool check(__attribute__((unused)) const char *word)
 // Loads dictionary into memory, returning true if successful else false
 bool load(const char *dictionary)
 {
-// 	dictionary_node HEAD;
-// 	HEAD.next = NULL;
-// 	HEAD.word = NULL;
     char line[LENGTH];
 	int i = 0;
     FILE *file = fopen (dictionary, "r");
     if (file != NULL) {
         while (fgets (line, sizeof line, file) != NULL) {
-// 			if (i == 0) {
-// 				char s[LENGTH];
-// 				strcpy(s, line);
-// 				HEAD.word = s;
-// 				i++;
-// 				continue;
-// 			}
-// 			dictionary_node node;
-// 			char s[LENGTH];
-// 			strcpy(s, line);
-// 			node.word = s;
-// 			node.next = &HEAD;
-// 			HEAD = node;
-// 			printf("%s", HEAD.word);
-// 			dictionary_node node;
-			if (i == 500) {
-				break;
-			}
+			i = i % HASH_TABLE_LENGTH;
 			dictionary_node *node = malloc(sizeof(dictionary_node));
 			strcpy(node->word, line);
+			// Check if linked list initialized. If so, make new element the new head
+			if (hash_table[i] == 0) {
+				node->next = NULL;
+				printf("Linked list doesn't exist. \n");
+			} else {
+				printf("Exists, changing head. \n");
+				// Point to the head of the table
+				node->next = hash_table[i];
+			}
+			// Change end of linked list to the new element
 			hash_table[i] = node;
-// 			printf("%lu ", hash(line) % 500);
-// 			printf("%s", hash_table[i]->word);
 			i++;
         }
-		printf("%s", hash_table[2]->word);
+		printf("%s", hash_table[0]->next->next->next->word);
         fclose (file);
         return true;
     } else {

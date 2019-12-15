@@ -8,6 +8,7 @@
 // Maximum length for a word
 // (e.g., pneumonoultramicroscopicsilicovolcanoconiosis)
 #define LENGTH 45
+#define HASH_TABLE_LENGTH  1000
 // Prototypes
 bool check(const char *word);
 bool load(const char *dictionary);
